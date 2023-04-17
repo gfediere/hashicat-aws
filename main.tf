@@ -8,7 +8,7 @@ terraform {
 }
 
 provider "aws" {
-  region  = var.region
+  region = var.region
 }
 
 resource "aws_vpc" "hashicat" {
@@ -16,7 +16,7 @@ resource "aws_vpc" "hashicat" {
   enable_dns_hostnames = true
 
   tags = {
-    name = "${var.prefix}-vpc-${var.region}"
+    name        = "${var.prefix}-vpc-${var.region}"
     environment = "Production"
   }
 }
@@ -127,9 +127,9 @@ resource "aws_instance" "hashicat" {
   vpc_security_group_ids      = [aws_security_group.hashicat.id]
 
   tags = {
-    Name = "${var.prefix}-hashicat-instance"
+    Name       = "${var.prefix}-hashicat-instance"
     Department = "devops"
-    Billable = "yes"
+    Billable   = "yes"
   }
 }
 
@@ -145,12 +145,9 @@ resource "aws_instance" "hashicat" {
 # Set up some environment variables for our script.
 # Add execute permissions to our scripts.
 # Run the deploy_app.sh script.
-resource "null_resource" "configure-cat-app" {
-  depends_on = [aws_eip_association.hashicat]
-
-  triggers = {
-    build_number = timestamp()
-  }
+resource "terraform_data" "launch_script_install" {
+  triggers_replace = aws_instance.hashicat.id
+  depends_on       = [aws_eip_association.hashicat]
 
   provisioner "file" {
     source      = "files/"
